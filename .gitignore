@@ -1,0 +1,29 @@
+# Rust
+apps/api/target/
+**/*.rs.bk
+
+# Node / Next
+apps/web/node_modules/
+apps/web/.next/
+apps/web/out/
+apps/web/.turbo/
+*.tsbuildinfo
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+!.env.example
+apps/api/.env
+apps/web/.env.local
+
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Logs / coverage
+*.log
+coverage/
+htmlcov/

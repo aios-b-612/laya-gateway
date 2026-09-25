@@ -1,0 +1,32 @@
+[package]
+name = "laya-gateway"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+description = "Local LLM gateway: Laya decides which tool to call; your usual model does the rest"
+repository = "https://github.com/rodriguesfas/laya-gateway"
+readme = "../../README.md"
+
+[[bin]]
+name = "laya-gateway"
+path = "src/main.rs"
+
+[dependencies]
+actix-cors = "0.7"
+actix-web = "4"
+anyhow = "1"
+chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"
+regex = "1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls", "stream"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
+tracing = "0.1"
+tracing-actix-web = "0.7"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }

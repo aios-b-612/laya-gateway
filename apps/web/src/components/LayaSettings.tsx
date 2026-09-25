@@ -86,7 +86,7 @@ export function LayaSettings({ gateway }: { gateway: string }) {
       </h2>
       <p className="mb-4 mt-1 text-[13px] text-[var(--gray-400)]">
         Set the URL of your Laya System One service. You can run it on this
-        machine or any reachable host. Saved at <code>{path}</code>.
+        machine or any reachable host.
       </p>
       <div className="mb-3 flex flex-wrap gap-2">
         {presets.map((p) => (

@@ -1,139 +1,282 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>laya-gateway</title>
+<title>AIOS · laya-gateway</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    color-scheme: dark;
-    --bg: #0c1117;
-    --panel: #141b24;
-    --line: #243041;
-    --text: #e8eef6;
-    --muted: #8b9bb0;
-    --accent: #3dd6c6;
-    --ok: #7fd962;
-    --warn: #f0b429;
-    --danger: #f07178;
+    color-scheme: light;
+    --neutral: #ffffff;
+    --primary: #0CAF60;
+    --primary-deep: #088d50;
+    --primary-mild: #34c779;
+    --primary-subtle: #0CAF601a;
+    --error: #ff6a55;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --info: #2a85ff;
+    --gray-50: #fafafa;
+    --gray-100: #f5f5f5;
+    --gray-200: #e5e5e5;
+    --gray-300: #d4d4d4;
+    --gray-400: #a3a3a4;
+    --gray-500: #737373;
+    --gray-600: #525252;
+    --gray-700: #404040;
+    --gray-800: #262626;
+    --gray-900: #171717;
+    --side-nav-width: 290px;
+    --header-height: 64px;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     min-height: 100vh;
-    font: 15px/1.45 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
-    color: var(--text);
-    background:
-      radial-gradient(1000px 500px at 8% -10%, #1a2a3a 0%, transparent 55%),
-      radial-gradient(800px 420px at 100% 0%, #13261f 0%, transparent 50%),
-      var(--bg);
+    font: 500 14px/1.5 Inter, system-ui, sans-serif;
+    color: var(--gray-500);
+    background: var(--gray-100);
+    -webkit-font-smoothing: antialiased;
   }
-  main { max-width: 960px; margin: 0 auto; padding: 28px 20px 48px; }
-  header { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: end; margin-bottom: 24px; }
-  .eyebrow { color: var(--accent); letter-spacing: .16em; text-transform: uppercase; font-size: 12px; margin: 0 0 6px; }
-  h1 { margin: 0; font-size: 28px; font-weight: 600; }
-  .sub { color: var(--muted); max-width: 42rem; margin: 8px 0 0; }
-  button, .btn {
-    border: 1px solid var(--line);
-    background: var(--panel);
-    color: var(--text);
+  h1,h2,h3 { color: var(--gray-900); font-weight: 700; margin: 0; }
+  a { color: var(--primary); text-decoration: none; }
+  .shell { display: flex; min-height: 100vh; }
+  .side-nav {
+    width: var(--side-nav-width);
+    flex: none;
+    background: var(--neutral);
+    border-right: 1px solid var(--gray-200);
+    display: flex;
+    flex-direction: column;
+  }
+  .side-brand {
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--gray-200);
+  }
+  .side-brand img {
+    height: 40px;
+    width: auto;
+    max-width: 140px;
+    object-fit: contain;
+  }
+  .side-brand .name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-900);
+  }
+  .side-brand .sub {
+    font-size: 11px;
+    color: var(--gray-400);
+    font-weight: 500;
+  }
+  .nav {
+    padding: 16px 12px;
+    display: grid;
+    gap: 4px;
+  }
+  .nav a, .nav button.nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    color: var(--gray-600);
+    font: inherit;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .nav a:hover, .nav button.nav-item:hover { background: var(--gray-100); color: var(--gray-900); }
+  .nav a.active, .nav button.nav-item.active {
+    background: var(--primary-subtle);
+    color: var(--primary-deep);
+    font-weight: 600;
+  }
+  .side-foot {
+    margin-top: auto;
+    padding: 16px 20px;
+    border-top: 1px solid var(--gray-200);
+    font-size: 12px;
+    color: var(--gray-400);
+  }
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .header {
+    height: var(--header-height);
+    background: var(--neutral);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    gap: 12px;
+  }
+  .header h1 { font-size: 18px; }
+  .header .meta { font-size: 12px; color: var(--gray-400); }
+  .content { padding: 24px; display: grid; gap: 16px; }
+  .card {
+    background: var(--neutral);
+    border: 1px solid var(--gray-200);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .card h2 {
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .card .desc { font-size: 13px; color: var(--gray-400); margin-bottom: 16px; }
+  .btn {
+    border: 1px solid var(--gray-200);
+    background: var(--neutral);
+    color: var(--gray-700);
     border-radius: 8px;
     padding: 8px 14px;
-    cursor: pointer;
     font: inherit;
+    cursor: pointer;
   }
-  button:hover, .btn:hover { border-color: var(--accent); }
-  button.primary { border-color: var(--accent); color: var(--accent); }
-  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 16px; }
-  .card { background: color-mix(in srgb, var(--panel) 85%, transparent); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
-  .card .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-  .card .value { font: 600 26px/1.2 ui-monospace, Menlo, monospace; margin-top: 8px; }
-  .accent { color: var(--accent); }
-  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
-  .presets button { font-size: 13px; }
+  .btn:hover { border-color: var(--primary); color: var(--primary-deep); }
+  .btn-primary {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+    font-weight: 600;
+  }
+  .btn-primary:hover { background: var(--primary-deep); border-color: var(--primary-deep); color: #fff; }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
   label.field { display: block; margin-bottom: 12px; }
-  label.field span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+  label.field span { display: block; color: var(--gray-500); font-size: 12px; margin-bottom: 6px; font-weight: 600; }
   input[type=text], input[type=password] {
     width: 100%;
-    border: 1px solid var(--line);
-    background: #0a0f14;
-    color: var(--text);
+    border: 1px solid var(--gray-200);
+    background: var(--gray-50);
+    color: var(--gray-800);
     border-radius: 8px;
     padding: 10px 12px;
-    font: 14px ui-monospace, Menlo, monospace;
+    font: 500 13px ui-monospace, SFMono-Regular, Menlo, monospace;
   }
+  input:focus { outline: 2px solid var(--primary-subtle); border-color: var(--primary); }
   .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
-  .status-ok { color: var(--ok); }
-  .status-bad { color: var(--danger); }
-  table { width: 100%; border-collapse: collapse; font: 13px ui-monospace, Menlo, monospace; }
-  th, td { text-align: left; padding: 8px 10px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
-  th { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 500; }
-  .forced { color: var(--ok); }
-  .none { color: var(--accent); }
-  .passthrough { color: var(--muted); }
-  .err { border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); background: color-mix(in srgb, var(--danger) 12%, transparent); padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; }
-  footer { margin-top: 18px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
-  a { color: var(--accent); }
+  .hint { color: var(--gray-400); font-size: 12px; }
+  .ok { color: var(--success); }
+  .bad { color: var(--error); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+  .tile .label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--gray-400); }
+  .tile .value { margin-top: 8px; font: 700 24px/1.2 Inter, sans-serif; color: var(--gray-900); }
+  .tile .value.accent { color: var(--primary); }
+  table { width: 100%; border-collapse: collapse; font: 500 12px ui-monospace, Menlo, monospace; }
+  th, td { text-align: left; padding: 10px 8px; border-top: 1px solid var(--gray-100); }
+  th { color: var(--gray-400); font-size: 11px; text-transform: uppercase; font-weight: 600; }
+  .forced { color: var(--success); }
+  .none { color: var(--info); }
+  .passthrough { color: var(--gray-400); }
+  .err {
+    border: 1px solid color-mix(in srgb, var(--error) 35%, white);
+    background: color-mix(in srgb, var(--error) 8%, white);
+    color: var(--error);
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  @media (max-width: 900px) {
+    .shell { flex-direction: column; }
+    .side-nav { width: 100%; border-right: 0; border-bottom: 1px solid var(--gray-200); }
+  }
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <div>
-      <p class="eyebrow">local · 127.0.0.1:8790</p>
-      <h1>laya-gateway</h1>
-      <p class="sub">Configure where Laya lives (Octor VPN, your LAN, or localhost). Default is Octor DEV; anyone can point at their own machine.</p>
+<div class="shell">
+  <aside class="side-nav">
+    <div class="side-brand">
+      <img src="/img/logo/aios.jpeg" alt="AIOS">
+      <div>
+        <div class="name">AIOS</div>
+        <div class="sub">laya-gateway</div>
+      </div>
     </div>
-    <button type="button" id="toggle">Routing: …</button>
-  </header>
-  <div id="error" class="err" hidden></div>
+    <nav class="nav">
+      <button type="button" class="nav-item active" data-panel="overview">Overview</button>
+      <button type="button" class="nav-item" data-panel="settings">Laya endpoint</button>
+      <button type="button" class="nav-item" data-panel="traffic">Traffic</button>
+    </nav>
+    <div class="side-foot">
+      Loopback only · Ecme / Octor template layout<br>
+      <span id="settings-path">~/.laya-gateway/settings.json</span>
+    </div>
+  </aside>
 
-  <section class="card" id="settings-card">
-    <div class="label">Laya endpoint</div>
-    <p class="hint" style="margin-top:8px">Accepts <code>host:port</code>, base URL, or full <code>/v1/systemone</code>. Saved under <code id="settings-path">~/.laya-gateway/settings.json</code>.</p>
-    <div class="presets" id="presets"></div>
-    <label class="field">
-      <span>Laya URL</span>
-      <input id="laya-url" type="text" placeholder="http://10.8.0.9:8343/v1/systemone" autocomplete="off" spellcheck="false">
-    </label>
-    <label class="field">
-      <span>Optional API key (leave blank to keep current)</span>
-      <input id="laya-key" type="password" placeholder="Bearer token if your Laya requires auth" autocomplete="off">
-    </label>
-    <label class="field">
-      <span>Optional model id</span>
-      <input id="laya-model" type="text" placeholder="e.g. multilingual" autocomplete="off" spellcheck="false">
-    </label>
-    <div class="actions">
-      <button type="button" class="primary" id="save-settings">Save</button>
-      <button type="button" id="test-laya">Test connection</button>
-      <span id="settings-msg" class="hint"></span>
-    </div>
-  </section>
+  <div class="main">
+    <header class="header">
+      <div>
+        <h1 id="page-title">Overview</h1>
+        <div class="meta">local · 127.0.0.1:8790</div>
+      </div>
+      <button type="button" class="btn" id="toggle">Routing: …</button>
+    </header>
 
-  <section class="grid" id="tiles"></section>
-  <section class="card">
-    <div class="label" style="margin-bottom:10px">Recent requests</div>
-    <div style="overflow-x:auto">
-      <table>
-        <thead>
-          <tr>
-            <th>When</th><th>Mode</th><th>Tool</th><th>Conf</th><th>Laya ms</th><th>Tokens</th><th>Reason</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
+    <div class="content">
+      <div id="error" class="err" hidden></div>
+
+      <section class="panel active" id="panel-overview">
+        <div class="card">
+          <h2>Gateway status</h2>
+          <p class="desc">Laya decides which tool to call; your usual LLM does the rest. Same shell pattern as Octor web apps (template-frontend / Ecme).</p>
+          <div class="grid" id="tiles"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-settings">
+        <div class="card">
+          <h2>Where is Laya?</h2>
+          <p class="desc">Default is Octor DEV VPN (<code>10.8.0.9:8343</code>). Anyone else can point to Laya on their own machine.</p>
+          <div class="presets" id="presets"></div>
+          <label class="field">
+            <span>Laya URL</span>
+            <input id="laya-url" type="text" placeholder="http://10.8.0.9:8343/v1/systemone" autocomplete="off" spellcheck="false">
+          </label>
+          <label class="field">
+            <span>Optional API key (leave blank to keep current)</span>
+            <input id="laya-key" type="password" placeholder="Bearer token if required" autocomplete="off">
+          </label>
+          <label class="field">
+            <span>Optional model id</span>
+            <input id="laya-model" type="text" placeholder="e.g. multilingual" autocomplete="off" spellcheck="false">
+          </label>
+          <div class="actions">
+            <button type="button" class="btn btn-primary" id="save-settings">Save</button>
+            <button type="button" class="btn" id="test-laya">Test connection</button>
+            <span id="settings-msg" class="hint"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="panel-traffic">
+        <div class="card">
+          <h2>Recent requests</h2>
+          <p class="desc">Metadata only — prompts and tool args never appear here.</p>
+          <div style="overflow-x:auto">
+            <table>
+              <thead>
+                <tr>
+                  <th>When</th><th>Mode</th><th>Tool</th><th>Conf</th><th>Laya ms</th><th>Tokens</th><th>Reason</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </div>
-  </section>
-  <footer>
-    API: <a href="/v1/stats">/v1/stats</a> ·
-    <a href="/v1/settings">/v1/settings</a> ·
-    <a href="/health/live">/health/live</a> ·
-    Chat proxy: <code>POST /v1/chat/completions</code>
-    <span id="updated"></span>
-  </footer>
-</main>
+  </div>
+</div>
 <script>
 const tiles = document.getElementById('tiles');
 const rows = document.getElementById('rows');
@@ -144,10 +287,22 @@ const urlInput = document.getElementById('laya-url');
 const keyInput = document.getElementById('laya-key');
 const modelInput = document.getElementById('laya-model');
 const settingsMsg = document.getElementById('settings-msg');
+const pageTitle = document.getElementById('page-title');
 let routing = true;
 
+document.querySelectorAll('.nav-item').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const id = btn.dataset.panel;
+    document.getElementById('panel-' + id).classList.add('active');
+    pageTitle.textContent = ({ overview: 'Overview', settings: 'Laya endpoint', traffic: 'Traffic' })[id] || 'Overview';
+  });
+});
+
 function card(label, value, accent) {
-  return `<div class="card"><div class="label">${label}</div><div class="value${accent ? ' accent' : ''}">${value}</div></div>`;
+  return `<div class="card tile"><div class="label">${label}</div><div class="value${accent ? ' accent' : ''}">${value}</div></div>`;
 }
 
 async function loadSettings() {
@@ -158,10 +313,10 @@ async function loadSettings() {
   modelInput.value = s.laya_model || '';
   keyInput.placeholder = s.laya_api_key_set
     ? 'API key is set — leave blank to keep'
-    : 'Bearer token if your Laya requires auth';
+    : 'Bearer token if required';
   document.getElementById('settings-path').textContent = s.settings_path || '~/.laya-gateway/settings.json';
   presetsEl.innerHTML = (s.presets || []).map(p =>
-    `<button type="button" data-url="${p.url}">${p.label}</button>`
+    `<button type="button" class="btn" data-url="${p.url}">${p.label}</button>`
   ).join('');
   presetsEl.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', () => { urlInput.value = btn.dataset.url; });
@@ -176,7 +331,7 @@ async function loadStats() {
     err.hidden = true;
     routing = !!s.routing_enabled;
     toggle.textContent = 'Routing: ' + (routing ? 'on' : 'off');
-    toggle.style.color = routing ? 'var(--ok)' : 'var(--warn)';
+    toggle.style.color = routing ? 'var(--success)' : 'var(--warning)';
     tiles.innerHTML = [
       card('Requests', s.requests ?? '—'),
       card('Forced', s.forced ?? '—', true),
@@ -198,12 +353,9 @@ async function loadStats() {
         <td>${conf}</td>
         <td>${ev.laya_latency_ms ?? '—'}</td>
         <td>${tokens}</td>
-        <td style="color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.reason ?? '—'}</td>
+        <td style="color:var(--gray-400);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.reason ?? '—'}</td>
       </tr>`;
-    }).join('') : `<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No traffic yet. Point your agent at http://127.0.0.1:8790/v1</td></tr>`;
-    document.getElementById('updated').textContent = s.updated_at
-      ? ' · updated ' + new Date(s.updated_at).toLocaleString()
-      : '';
+    }).join('') : `<tr><td colspan="7" style="color:var(--gray-400);text-align:center;padding:24px">No traffic yet. Point your agent at http://127.0.0.1:8790/v1</td></tr>`;
   } catch (e) {
     err.hidden = false;
     err.textContent = 'Could not load /v1/stats: ' + e.message;
@@ -235,19 +387,18 @@ document.getElementById('save-settings').addEventListener('click', async () => {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     settingsMsg.textContent = data.error || ('Save failed (' + res.status + ')');
-    settingsMsg.className = 'hint status-bad';
+    settingsMsg.className = 'hint bad';
     return;
   }
   keyInput.value = '';
   settingsMsg.textContent = 'Saved · ' + data.laya_url;
-  settingsMsg.className = 'hint status-ok';
+  settingsMsg.className = 'hint ok';
   await loadSettings();
 });
 
 document.getElementById('test-laya').addEventListener('click', async () => {
   settingsMsg.textContent = 'Testing…';
   settingsMsg.className = 'hint';
-  // Save first if URL field changed, so test hits the typed endpoint
   const saveRes = await fetch('/v1/settings', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
@@ -260,17 +411,17 @@ document.getElementById('test-laya').addEventListener('click', async () => {
   if (!saveRes.ok) {
     const data = await saveRes.json().catch(() => ({}));
     settingsMsg.textContent = data.error || 'Could not apply URL before test';
-    settingsMsg.className = 'hint status-bad';
+    settingsMsg.className = 'hint bad';
     return;
   }
   const res = await fetch('/v1/settings/test', { method: 'POST' });
   const data = await res.json();
   if (data.ok) {
     settingsMsg.textContent = `OK · HTTP ${data.http_status} · ${data.latency_ms} ms`;
-    settingsMsg.className = 'hint status-ok';
+    settingsMsg.className = 'hint ok';
   } else {
     settingsMsg.textContent = data.error || (`Failed · HTTP ${data.http_status || '?'}`);
-    settingsMsg.className = 'hint status-bad';
+    settingsMsg.className = 'hint bad';
   }
   await loadSettings();
 });

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import {
   fetchStats,
@@ -9,15 +10,22 @@ import {
 import { type Locale, t } from "@/lib/i18n";
 import { StatCard } from "@/components/StatCard";
 import { EventsTable } from "@/components/EventsTable";
+import { LayaSettings } from "@/components/LayaSettings";
 
 const POLL_MS = 2000;
 const LOCALE_KEY = "laya-gateway-locale";
+const GATEWAY =
+  process.env.NEXT_PUBLIC_GATEWAY_URL?.replace(/\/$/, "") ||
+  "http://127.0.0.1:8790";
+
+type Panel = "overview" | "settings" | "traffic";
 
 export function Dashboard() {
   const [stats, setStats] = useState<StatsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [locale, setLocale] = useState<Locale>("en");
+  const [panel, setPanel] = useState<Panel>("overview");
 
   useEffect(() => {
     const saved = window.localStorage.getItem(LOCALE_KEY);
@@ -58,95 +66,170 @@ export function Dashboard() {
     }
   }
 
+  const titles: Record<Panel, string> = {
+    overview: "Overview",
+    settings: "Laya endpoint",
+    traffic: "Traffic",
+  };
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-6 py-10">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="mb-1 text-sm tracking-[0.18em] text-[var(--accent)] uppercase">
-            {t(locale, "eyebrow")}
-          </p>
-          <h1 className="text-4xl font-semibold tracking-tight">
-            {t(locale, "title")}
-          </h1>
-          <p className="mt-2 max-w-xl text-[var(--muted)]">
-            {t(locale, "subtitle")}
-          </p>
+    <div className="flex min-h-screen bg-[var(--gray-100)] text-[var(--gray-500)]">
+      <aside
+        className="flex w-[var(--side-nav-width)] flex-none flex-col border-r border-[var(--gray-200)] bg-white"
+      >
+        <div className="flex h-[var(--header-height)] items-center gap-3 border-b border-[var(--gray-200)] px-5">
+          <Image
+            src="/img/logo/aios.jpeg"
+            alt="AIOS"
+            width={120}
+            height={40}
+            className="h-10 w-auto object-contain"
+            priority
+          />
+          <div>
+            <div className="text-[15px] font-bold text-[var(--gray-900)]">
+              AIOS
+            </div>
+            <div className="text-[11px] font-medium text-[var(--gray-400)]">
+              laya-gateway
+            </div>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <label className="text-xs text-[var(--muted)]">
-            {t(locale, "lang")}
-            <select
-              className="ml-2 rounded-md border border-[var(--line)] bg-[var(--panel)] px-2 py-1 text-sm text-[var(--text)]"
-              value={locale}
-              onChange={(e) => changeLocale(e.target.value as Locale)}
+        <nav className="grid gap-1 p-3">
+          {(
+            [
+              ["overview", "Overview"],
+              ["settings", "Laya endpoint"],
+              ["traffic", "Traffic"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => setPanel(id)}
+              className={`rounded-[10px] px-3 py-2.5 text-left text-sm ${
+                panel === id
+                  ? "bg-[var(--primary-subtle)] font-semibold text-[var(--primary-deep)]"
+                  : "text-[var(--gray-700)] hover:bg-[var(--gray-100)]"
+              }`}
             >
-              <option value="en">English</option>
-              <option value="pt-BR">Português (Brasil)</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            onClick={() => void toggleRouting()}
-            disabled={!stats || busy}
-            className="rounded-md border border-[var(--line)] bg-[var(--panel)] px-4 py-2 text-sm font-medium transition hover:border-[var(--accent)] disabled:opacity-50"
-          >
-            {t(locale, "routing")}:{" "}
-            <span
-              style={{
-                color: stats?.routing_enabled ? "var(--ok)" : "var(--warn)",
-              }}
+              {label}
+            </button>
+          ))}
+        </nav>
+        <div className="mt-auto border-t border-[var(--gray-200)] px-5 py-4 text-xs text-[var(--gray-400)]">
+          Ecme / Octor template layout
+          <br />
+          API {GATEWAY}
+        </div>
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="flex h-[var(--header-height)] items-center justify-between gap-3 border-b border-[var(--gray-200)] bg-white px-6">
+          <div>
+            <h1 className="text-lg font-bold text-[var(--gray-900)]">
+              {titles[panel]}
+            </h1>
+            <p className="text-xs text-[var(--gray-400)]">
+              local · 127.0.0.1:8790
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-[var(--gray-400)]">
+              {t(locale, "lang")}
+              <select
+                className="ml-2 rounded-lg border border-[var(--gray-200)] bg-white px-2 py-1 text-sm text-[var(--gray-700)]"
+                value={locale}
+                onChange={(e) => changeLocale(e.target.value as Locale)}
+              >
+                <option value="en">English</option>
+                <option value="pt-BR">Português (Brasil)</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              onClick={() => void toggleRouting()}
+              disabled={!stats || busy}
+              className="rounded-lg border border-[var(--gray-200)] bg-white px-3 py-2 text-sm font-medium text-[var(--gray-700)] hover:border-[var(--primary)] disabled:opacity-50"
             >
-              {stats?.routing_enabled ? "on" : "off"}
-            </span>
-          </button>
-        </div>
-      </header>
+              {t(locale, "routing")}:{" "}
+              <span
+                style={{
+                  color: stats?.routing_enabled
+                    ? "var(--primary)"
+                    : "#f59e0b",
+                }}
+              >
+                {stats?.routing_enabled ? "on" : "off"}
+              </span>
+            </button>
+          </div>
+        </header>
 
-      {error ? (
-        <div className="rounded-md border border-[var(--danger)]/40 bg-[var(--danger)]/10 px-4 py-3 text-sm">
-          {t(locale, "offlinePrefix", { error })}
-          <code className="font-[family-name:var(--font-mono)]">make api</code>
-          {t(locale, "offlineSuffix")}
-        </div>
-      ) : null}
+        <main className="grid gap-4 p-6">
+          {error ? (
+            <div className="rounded-[10px] border border-[#ff6a5540] bg-[#ff6a5514] px-4 py-3 text-sm text-[#ff6a55]">
+              {t(locale, "offlinePrefix", { error })}
+              <code className="font-mono">make api</code>
+              {t(locale, "offlineSuffix")}
+            </div>
+          ) : null}
 
-      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label={t(locale, "requests")} value={stats?.requests ?? "—"} />
-        <StatCard
-          label={t(locale, "forced")}
-          value={stats?.forced ?? "—"}
-          accent
-        />
-        <StatCard
-          label={t(locale, "passthrough")}
-          value={stats?.passthrough ?? "—"}
-        />
-        <StatCard
-          label={t(locale, "layaAvg")}
-          value={stats ? stats.laya_avg_latency_ms.toFixed(0) : "—"}
-        />
-      </section>
+          {panel === "overview" ? (
+            <>
+              <section className="rounded-xl border border-[var(--gray-200)] bg-white p-5">
+                <h2 className="text-[15px] font-bold text-[var(--gray-900)]">
+                  Gateway status
+                </h2>
+                <p className="mb-4 mt-1 text-[13px] text-[var(--gray-400)]">
+                  {t(locale, "subtitle")}
+                </p>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <StatCard
+                    label={t(locale, "requests")}
+                    value={stats?.requests ?? "—"}
+                  />
+                  <StatCard
+                    label={t(locale, "forced")}
+                    value={stats?.forced ?? "—"}
+                    accent
+                  />
+                  <StatCard
+                    label={t(locale, "passthrough")}
+                    value={stats?.passthrough ?? "—"}
+                  />
+                  <StatCard
+                    label={t(locale, "layaAvg")}
+                    value={
+                      stats ? stats.laya_avg_latency_ms.toFixed(0) : "—"
+                    }
+                  />
+                </div>
+              </section>
+              <section className="grid gap-3 sm:grid-cols-3">
+                <StatCard
+                  label={t(locale, "routed")}
+                  value={stats?.routed ?? "—"}
+                />
+                <StatCard
+                  label={t(locale, "none")}
+                  value={stats?.none ?? "—"}
+                />
+                <StatCard
+                  label={t(locale, "layaErrors")}
+                  value={stats?.laya_errors ?? "—"}
+                />
+              </section>
+            </>
+          ) : null}
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        <StatCard label={t(locale, "routed")} value={stats?.routed ?? "—"} />
-        <StatCard label={t(locale, "none")} value={stats?.none ?? "—"} />
-        <StatCard
-          label={t(locale, "layaErrors")}
-          value={stats?.laya_errors ?? "—"}
-        />
-      </section>
+          {panel === "settings" ? <LayaSettings gateway={GATEWAY} /> : null}
 
-      <EventsTable events={stats?.events ?? []} locale={locale} />
-
-      <footer className="border-t border-[var(--line)] pt-4 text-xs text-[var(--muted)]">
-        {t(locale, "updated")}{" "}
-        {stats?.updated_at
-          ? new Date(stats.updated_at).toLocaleString(
-              locale === "pt-BR" ? "pt-BR" : "en-US",
-            )
-          : "—"}{" "}
-        · {t(locale, "privacy")}
-      </footer>
-    </main>
+          {panel === "traffic" ? (
+            <EventsTable events={stats?.events ?? []} locale={locale} />
+          ) : null}
+        </main>
+      </div>
+    </div>
   );
 }

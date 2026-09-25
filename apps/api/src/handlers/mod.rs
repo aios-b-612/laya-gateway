@@ -44,6 +44,13 @@ pub async fn dashboard_page() -> HttpResponse {
         .body(include_str!("../dashboard.html"))
 }
 
+pub async fn logo_aios() -> HttpResponse {
+    HttpResponse::Ok()
+        .content_type("image/jpeg")
+        .insert_header(("Cache-Control", "public, max-age=86400"))
+        .body(include_bytes!("../../assets/aios.jpeg").as_ref())
+}
+
 pub async fn health_live(state: web::Data<AppState>) -> HttpResponse {
     HttpResponse::Ok()
         .insert_header(("Cache-Control", "no-store"))

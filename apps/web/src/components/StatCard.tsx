@@ -6,13 +6,13 @@ type Props = {
 
 export function StatCard({ label, value, accent }: Props) {
   return (
-    <div className="rounded-lg border border-[var(--line)] bg-[var(--panel)]/80 px-4 py-5">
-      <p className="text-xs tracking-wide text-[var(--muted)] uppercase">
+    <div className="rounded-xl border border-[var(--gray-200)] bg-white px-4 py-4">
+      <p className="text-[11px] font-semibold tracking-wide text-[var(--gray-400)] uppercase">
         {label}
       </p>
       <p
-        className="mt-2 font-[family-name:var(--font-mono)] text-3xl font-medium"
-        style={{ color: accent ? "var(--accent)" : "var(--text)" }}
+        className="mt-2 text-2xl font-bold text-[var(--gray-900)]"
+        style={{ color: accent ? "var(--primary)" : undefined }}
       >
         {value}
       </p>

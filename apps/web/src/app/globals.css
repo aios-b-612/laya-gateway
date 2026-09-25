@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #0c1117;
-  --panel: #141b24;
-  --line: #243041;
-  --text: #e8eef6;
-  --muted: #8b9bb0;
-  --accent: #3dd6c6;
-  --warn: #f0b429;
-  --danger: #f07178;
-  --ok: #7fd962;
+  --neutral: #ffffff;
+  --primary: #0caf60;
+  --primary-deep: #088d50;
+  --primary-subtle: #0caf601a;
+  --gray-100: #f5f5f5;
+  --gray-200: #e5e5e5;
+  --gray-400: #a3a3a3;
+  --gray-500: #737373;
+  --gray-700: #404040;
+  --gray-900: #171717;
+  --side-nav-width: 290px;
+  --header-height: 64px;
 }
 
 * {
@@ -20,14 +23,8 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  background:
-    radial-gradient(1200px 600px at 10% -10%, #1a2a3a 0%, transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, #13261f 0%, transparent 50%),
-    var(--bg);
-  color: var(--text);
-  font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
-}
-
-body {
-  letter-spacing: 0.01em;
+  font-family: Inter, system-ui, sans-serif;
+  background: var(--gray-100);
+  color: var(--gray-500);
+  -webkit-font-smoothing: antialiased;
 }

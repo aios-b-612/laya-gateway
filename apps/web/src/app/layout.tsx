@@ -1,33 +1,28 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const sans = IBM_Plex_Sans({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-sans",
-});
-
-const mono = IBM_Plex_Mono({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-  variable: "--font-mono",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
-  title: "laya-gateway",
+  title: "AIOS · laya-gateway",
   description:
-    "Local dashboard — Laya decides the tool; the LLM does the rest",
+    "Local gateway dashboard — Laya decides the tool; the LLM does the rest",
+  icons: {
+    icon: "/img/logo/aios.jpeg",
+  },
 };
 
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR">
-      <body className={`${sans.variable} ${mono.variable} antialiased`}>
-        {children}
-      </body>
+    <html lang="en" className="light">
+      <body className={`${inter.variable} antialiased`}>{children}</body>
     </html>
   );
 }

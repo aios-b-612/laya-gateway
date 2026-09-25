@@ -8,30 +8,30 @@ type Props = {
 };
 
 function modeColor(mode: GatewayEvent["mode"]): string {
-  if (mode === "forced") return "var(--ok)";
-  if (mode === "none") return "var(--accent)";
-  return "var(--muted)";
+  if (mode === "forced") return "var(--primary)";
+  if (mode === "none") return "#2a85ff";
+  return "var(--gray-400)";
 }
 
 export function EventsTable({ events, locale }: Props) {
   return (
-    <section className="overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--panel)]/60">
-      <div className="border-b border-[var(--line)] px-4 py-3">
-        <h2 className="text-sm font-medium tracking-wide uppercase">
+    <section className="overflow-hidden rounded-xl border border-[var(--gray-200)] bg-white">
+      <div className="border-b border-[var(--gray-200)] px-4 py-3">
+        <h2 className="text-sm font-bold tracking-wide text-[var(--gray-900)] uppercase">
           {t(locale, "recent")}
         </h2>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm">
-          <thead className="text-xs text-[var(--muted)] uppercase">
+          <thead className="text-[11px] font-semibold text-[var(--gray-400)] uppercase">
             <tr>
-              <th className="px-4 py-2 font-medium">{t(locale, "when")}</th>
-              <th className="px-4 py-2 font-medium">{t(locale, "mode")}</th>
-              <th className="px-4 py-2 font-medium">{t(locale, "tool")}</th>
-              <th className="px-4 py-2 font-medium">{t(locale, "conf")}</th>
-              <th className="px-4 py-2 font-medium">{t(locale, "layaMs")}</th>
-              <th className="px-4 py-2 font-medium">{t(locale, "tokens")}</th>
-              <th className="px-4 py-2 font-medium">{t(locale, "reason")}</th>
+              <th className="px-4 py-2">{t(locale, "when")}</th>
+              <th className="px-4 py-2">{t(locale, "mode")}</th>
+              <th className="px-4 py-2">{t(locale, "tool")}</th>
+              <th className="px-4 py-2">{t(locale, "conf")}</th>
+              <th className="px-4 py-2">{t(locale, "layaMs")}</th>
+              <th className="px-4 py-2">{t(locale, "tokens")}</th>
+              <th className="px-4 py-2">{t(locale, "reason")}</th>
             </tr>
           </thead>
           <tbody>
@@ -39,12 +39,10 @@ export function EventsTable({ events, locale }: Props) {
               <tr>
                 <td
                   colSpan={7}
-                  className="px-4 py-8 text-center text-[var(--muted)]"
+                  className="px-4 py-8 text-center text-[var(--gray-400)]"
                 >
                   {t(locale, "emptyPrefix")}
-                  <code className="font-[family-name:var(--font-mono)]">
-                    http://127.0.0.1:8790/v1
-                  </code>
+                  <code className="font-mono">http://127.0.0.1:8790/v1</code>
                   {t(locale, "emptySuffix")}
                 </td>
               </tr>
@@ -52,9 +50,9 @@ export function EventsTable({ events, locale }: Props) {
               events.map((ev) => (
                 <tr
                   key={ev.id}
-                  className="border-t border-[var(--line)]/70 font-[family-name:var(--font-mono)] text-[13px]"
+                  className="border-t border-[var(--gray-100)] font-mono text-[12px]"
                 >
-                  <td className="px-4 py-2 whitespace-nowrap text-[var(--muted)]">
+                  <td className="px-4 py-2 whitespace-nowrap text-[var(--gray-400)]">
                     {new Date(ev.at).toLocaleTimeString(
                       locale === "pt-BR" ? "pt-BR" : "en-US",
                     )}
@@ -73,7 +71,7 @@ export function EventsTable({ events, locale }: Props) {
                   <td className="px-4 py-2">
                     {ev.prompt_tokens ?? "—"} / {ev.completion_tokens ?? "—"}
                   </td>
-                  <td className="max-w-[220px] truncate px-4 py-2 text-[var(--muted)]">
+                  <td className="max-w-[220px] truncate px-4 py-2 text-[var(--gray-400)]">
                     {ev.reason ?? "—"}
                   </td>
                 </tr>

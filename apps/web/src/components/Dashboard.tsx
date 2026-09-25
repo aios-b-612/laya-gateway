@@ -77,22 +77,17 @@ export function Dashboard() {
       <aside
         className="flex w-[var(--side-nav-width)] flex-none flex-col border-r border-[var(--gray-200)] bg-white"
       >
-        <div className="flex h-[var(--header-height)] items-center gap-3 border-b border-[var(--gray-200)] px-5">
+        <div className="flex flex-col items-start gap-2.5 border-b border-[var(--gray-200)] px-5 pb-4 pt-5">
           <Image
             src="/img/logo/aios.jpeg"
             alt="AIOS"
-            width={120}
-            height={40}
-            className="h-10 w-auto object-contain"
+            width={180}
+            height={44}
+            className="h-11 w-auto max-w-[180px] object-contain"
             priority
           />
-          <div>
-            <div className="text-[15px] font-bold text-[var(--gray-900)]">
-              AIOS
-            </div>
-            <div className="text-[11px] font-medium text-[var(--gray-400)]">
-              laya-gateway
-            </div>
+          <div className="text-[13px] font-semibold text-[var(--gray-700)]">
+            Laya Gateway
           </div>
         </div>
         <nav className="grid gap-1 p-3">

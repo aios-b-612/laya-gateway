@@ -1,0 +1,12 @@
+---
+description: Local laya-gateway is installed on this notebook
+alwaysApply: true
+---
+# laya-gateway (local)
+
+- Proxy: `http://127.0.0.1:8790` (systemd user unit `laya-gateway.service`)
+- Laya: `http://10.8.0.9:8343/v1/systemone` (DEV VPN)
+- Upstream LLM (current): local llama.cpp `http://127.0.0.1:12434/v1`
+- Dashboard: `cd apps/web && npm run dev` → `http://127.0.0.1:3000`
+- OpenCode provider id: `laya-gateway` (models `qwen-coder-fast`, `qwen-coder-gpu`)
+- Do not restart Cursor/OpenCode to use config file changes for OpenCode; pick model `laya-gateway/…` if the session still shows the old default.

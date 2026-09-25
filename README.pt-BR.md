@@ -4,6 +4,27 @@
 
 Gateway LLM local (no laptop do desenvolvedor) inspirado no [jev-gateway](https://github.com/vinilana/jev-gateway): quando o coding agent vai decidir **qual tool chamar**, o gateway pergunta ao [Laya](https://github.com/NandhaKishorM/laya) (System One open-weight) em vez de gastar o LLM caro só nessa escolha. O resto do tráfego segue para o modelo usual.
 
+## Para leigos (linguagem simples)
+
+Imagine o coding agent como um chef ocupado. A cada pouco ele precisa escolher um utensílio (ler um arquivo, rodar um comando, buscar na web…). Perguntar ao cérebro grande e caro (“qual colher?”) em toda rodada é lento e caro.
+
+**Laya** é um especialista pequeno que só responde perguntas tipadas como “qual tool?” ou “sim/não?” — rápido, com uma nota de confiança. O **laya-gateway** fica entre o agent e o LLM de sempre: pergunta isso ao Laya e ou direciona o LLM para aquela tool, ou deixa o pedido intacto se o Laya estiver inseguro (fail-open).
+
+| Peça | Metáfora | Onde roda |
+|------|----------|-----------|
+| Coding agent | O chef | OpenCode / Cursor no seu PC |
+| laya-gateway | O ajudante de cozinha | Só no seu PC (`127.0.0.1`) |
+| Laya | Especialista “qual tool?” | Seu PC ou box DEV compartilhado |
+| Seu LLM | O chef-mestre do trabalho difícil | Modelo local ou API na nuvem |
+| Dashboard | Placar | Seu PC (`:3000`) |
+
+Diagramas interativos (abra o HTML no navegador):
+
+- [Arquitetura — layout no laptop](./docs/diagramas/archify/architecture.laptop.html)
+- [Workflow — decisão de tool](./docs/diagramas/archify/workflow.tool-decision.html)
+
+Fontes JSON (Archify): [`docs/diagramas/archify/`](./docs/diagramas/archify/).
+
 Monorepo:
 
 | Caminho | Stack | Inspirado em |
@@ -32,6 +53,8 @@ dashboard Next  :3000  (só metadados / métricas)
 
 Fail-open: se o Laya cair, o request segue intacto para o LLM.
 
+Detalhe: [docs/architecture.pt-BR.md](./docs/architecture.pt-BR.md).
+
 ## Início rápido
 
 ```bash
@@ -56,6 +79,10 @@ cd apps/web && npm install && npm run dev
 Base URL do client → `http://127.0.0.1:8790/v1` (ou conforme o client).  
 O `Authorization` do LLM é encaminhado; opcionalmente use `LLM_API_KEY` no `.env`.
 
+**OpenCode** — provider em `opencode.json` apontando para `http://127.0.0.1:8790/v1`.
+
+**Cursor:** os modelos hospedados do Composer/Agent **não** passam por este proxy. Use OpenCode (ou outro client OpenAI-compatible) para o roteamento completo. Em builds com BYOK OpenAI, a base URL pode ser `http://127.0.0.1:8790/v1`.
+
 ## Routing
 
 | Mode | Efeito |
@@ -79,6 +106,7 @@ Implementado:
 - Decisão Laya `choice` + `noul`
 - Stats + toggle de routing
 - Dashboard Next
+- Diagramas Archify (arquitetura + workflow)
 
 Roadmap:
 

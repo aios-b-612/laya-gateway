@@ -1,0 +1,129 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "How a tool decision is made",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "views": [
+      {
+        "id": "happy-path",
+        "label": "Confident route",
+        "focus": ["agent", "gateway", "laya", "force", "llm", "done"],
+        "note": "Laya is sure which tool to use, so the LLM only fills arguments."
+      },
+      {
+        "id": "fail-open",
+        "label": "Fail-open",
+        "focus": ["gateway", "laya", "pass", "llm"],
+        "note": "If Laya is unsure or offline, the request continues unchanged."
+      }
+    ]
+  },
+  "lanes": [
+    { "id": "ide", "label": "Your IDE / agent" },
+    { "id": "gw", "label": "laya-gateway (local)" },
+    { "id": "decide", "label": "Decision & upstream" }
+  ],
+  "phases": [
+    { "id": "ask", "label": "Ask", "fromCol": 0, "toCol": 1 },
+    { "id": "decide", "label": "Decide", "fromCol": 2, "toCol": 3, "variant": "emphasis" },
+    { "id": "act", "label": "Act", "fromCol": 4, "toCol": 5 }
+  ],
+  "mainPath": ["agent", "gateway", "laya", "force", "llm", "done"],
+  "nodes": [
+    {
+      "id": "agent",
+      "lane": "ide",
+      "col": 0,
+      "type": "frontend",
+      "label": "Coding agent",
+      "sublabel": "OpenCode / Cursor",
+      "width": 140
+    },
+    {
+      "id": "done",
+      "lane": "ide",
+      "col": 5,
+      "type": "frontend",
+      "label": "Agent continues",
+      "sublabel": "with LLM reply",
+      "width": 140
+    },
+    {
+      "id": "gateway",
+      "lane": "gw",
+      "col": 1,
+      "type": "backend",
+      "label": "Receive request",
+      "sublabel": "chat completions",
+      "width": 140
+    },
+    {
+      "id": "force",
+      "lane": "gw",
+      "col": 4,
+      "type": "backend",
+      "label": "Force tool_choice",
+      "sublabel": "or passthrough",
+      "width": 140
+    },
+    {
+      "id": "laya",
+      "lane": "decide",
+      "col": 2,
+      "type": "cloud",
+      "label": "Ask Laya",
+      "sublabel": "which tool?",
+      "tag": "System One",
+      "width": 140
+    },
+    {
+      "id": "pass",
+      "lane": "decide",
+      "col": 3,
+      "type": "security",
+      "label": "Low confidence",
+      "sublabel": "leave request as-is",
+      "width": 140
+    },
+    {
+      "id": "llm",
+      "lane": "decide",
+      "col": 5,
+      "type": "external",
+      "label": "Your LLM",
+      "sublabel": "DeepSeek / …",
+      "width": 140
+    }
+  ],
+  "edges": [
+    { "id": "e1", "from": "agent", "to": "gateway", "label": "OpenAI API", "variant": "emphasis" },
+    { "id": "e2", "from": "gateway", "to": "laya", "label": "typed question", "variant": "emphasis" },
+    { "id": "e3", "from": "laya", "to": "force", "label": "confident", "variant": "emphasis" },
+    { "id": "e4", "from": "laya", "to": "pass", "label": "unsure / error", "variant": "security", "role": "branch" },
+    { "id": "e5", "from": "pass", "to": "force", "variant": "dashed" },
+    { "id": "e6", "from": "force", "to": "llm", "label": "forward", "variant": "emphasis" },
+    { "id": "e7", "from": "llm", "to": "done", "label": "reply", "variant": "emphasis", "role": "return" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Beginner view",
+      "items": [
+        "The agent is about to pick a tool (read file, run shell, …)",
+        "Laya answers that tiny question in milliseconds",
+        "If unsure, nothing changes — fail-open"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Why bother",
+      "items": [
+        "Tool choice is a frequent, expensive LLM turn",
+        "A small decision model can cut that cost",
+        "You still use your favourite big model for real coding"
+      ]
+    }
+  ]
+}

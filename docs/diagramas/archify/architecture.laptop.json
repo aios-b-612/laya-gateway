@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "laya-gateway on your laptop",
+    "quality_profile": "showcase",
+    "locale": "en",
+    "views": [
+      {
+        "id": "happy-path",
+        "label": "Happy path",
+        "focus": ["dev", "agent", "gateway", "laya", "llm"],
+        "note": "Your coding agent asks the gateway; Laya picks the tool; the usual LLM does the heavy work."
+      },
+      {
+        "id": "local-vs-shared",
+        "label": "Local vs shared",
+        "focus": ["gateway", "dash", "laya"],
+        "note": "The gateway and dashboard stay on 127.0.0.1. Only Laya may live on a shared DEV box."
+      }
+    ]
+  },
+  "components": [
+    {
+      "id": "dev",
+      "type": "external",
+      "label": "You",
+      "sublabel": "Developer",
+      "pos": [48, 280],
+      "size": [120, 64]
+    },
+    {
+      "id": "agent",
+      "type": "frontend",
+      "label": "Coding agent",
+      "sublabel": "OpenCode / Cursor",
+      "pos": [240, 280],
+      "size": [150, 64],
+      "tag": "IDE"
+    },
+    {
+      "id": "gateway",
+      "type": "backend",
+      "label": "laya-gateway",
+      "sublabel": "127.0.0.1:8790",
+      "pos": [470, 280],
+      "size": [160, 64],
+      "tag": "Rust"
+    },
+    {
+      "id": "dash",
+      "type": "frontend",
+      "label": "Dashboard",
+      "sublabel": "Next :3000",
+      "pos": [470, 120],
+      "size": [160, 64]
+    },
+    {
+      "id": "laya",
+      "type": "cloud",
+      "label": "Laya",
+      "sublabel": "System One",
+      "pos": [720, 160],
+      "size": [150, 64],
+      "tag": "/v1/systemone"
+    },
+    {
+      "id": "llm",
+      "type": "external",
+      "label": "Your LLM",
+      "sublabel": "DeepSeek / OpenAI…",
+      "pos": [720, 360],
+      "size": [150, 64]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Your laptop (loopback only)",
+      "wraps": ["agent", "gateway", "dash"]
+    }
+  ],
+  "connections": [
+    {
+      "id": "you-agent",
+      "from": "dev",
+      "to": "agent",
+      "label": "prompt",
+      "variant": "emphasis"
+    },
+    {
+      "id": "agent-gw",
+      "from": "agent",
+      "to": "gateway",
+      "label": "OpenAI chat API",
+      "variant": "emphasis"
+    },
+    {
+      "id": "gw-laya",
+      "from": "gateway",
+      "to": "laya",
+      "label": "which tool?",
+      "fromSide": "top",
+      "toSide": "left"
+    },
+    {
+      "id": "gw-llm",
+      "from": "gateway",
+      "to": "llm",
+      "label": "forced tool or passthrough",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "dash-stats",
+      "from": "dash",
+      "to": "gateway",
+      "label": "GET /v1/stats",
+      "variant": "dashed",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "labelDy": 58
+    }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "In plain words",
+      "items": [
+        "Think of Laya as a fast traffic cop for tools",
+        "The expensive model only drives when needed",
+        "Your prompts never leave the laptop via the gateway path to a shared proxy"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "What stays local",
+      "items": [
+        "laya-gateway on 127.0.0.1:8790",
+        "Dashboard metrics only — no prompt text",
+        "LLM API keys on your machine"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "What may be shared",
+      "items": [
+        "Laya model service (e.g. team DEV VPN)",
+        "Same typed /v1/systemone protocol as Jev"
+      ]
+    }
+  ]
+}

@@ -74,7 +74,8 @@ On Linux you can also install a user systemd unit — see [docs/notebook-install
 - Health: `GET /health/live`
 - Stats: `GET /v1/stats`
 - Chat proxy: `POST /v1/chat/completions` (alias `/chat/completions`)
-- Dashboard: `http://127.0.0.1:3000`
+- Dashboard (built-in): `http://127.0.0.1:8790/` or `/dashboard`
+- Optional Next UI: `http://127.0.0.1:3000`
 
 ### Point an OpenAI-compatible client
 

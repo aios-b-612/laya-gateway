@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>laya-gateway</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0c1117;
+    --panel: #141b24;
+    --line: #243041;
+    --text: #e8eef6;
+    --muted: #8b9bb0;
+    --accent: #3dd6c6;
+    --ok: #7fd962;
+    --warn: #f0b429;
+    --danger: #f07178;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font: 15px/1.45 "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1000px 500px at 8% -10%, #1a2a3a 0%, transparent 55%),
+      radial-gradient(800px 420px at 100% 0%, #13261f 0%, transparent 50%),
+      var(--bg);
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 28px 20px 48px; }
+  header { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; align-items: end; margin-bottom: 24px; }
+  .eyebrow { color: var(--accent); letter-spacing: .16em; text-transform: uppercase; font-size: 12px; margin: 0 0 6px; }
+  h1 { margin: 0; font-size: 28px; font-weight: 600; }
+  .sub { color: var(--muted); max-width: 42rem; margin: 8px 0 0; }
+  button {
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font: inherit;
+  }
+  button:hover { border-color: var(--accent); }
+  .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 16px; }
+  .card { background: color-mix(in srgb, var(--panel) 85%, transparent); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .card .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+  .card .value { font: 600 26px/1.2 ui-monospace, Menlo, monospace; margin-top: 8px; }
+  .accent { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; font: 13px ui-monospace, Menlo, monospace; }
+  th, td { text-align: left; padding: 8px 10px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
+  th { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 500; }
+  .forced { color: var(--ok); }
+  .none { color: var(--accent); }
+  .passthrough { color: var(--muted); }
+  .err { border: 1px solid color-mix(in srgb, var(--danger) 40%, transparent); background: color-mix(in srgb, var(--danger) 12%, transparent); padding: 10px 12px; border-radius: 8px; margin-bottom: 16px; }
+  footer { margin-top: 18px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--line); padding-top: 12px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <p class="eyebrow">local · 127.0.0.1:8790</p>
+      <h1>laya-gateway</h1>
+      <p class="sub">Laya picks the tool; your usual LLM does the rest. This page is served by the gateway itself.</p>
+    </div>
+    <button type="button" id="toggle">Routing: …</button>
+  </header>
+  <div id="error" class="err" hidden></div>
+  <section class="grid" id="tiles"></section>
+  <section class="card">
+    <div class="label" style="margin-bottom:10px">Recent requests</div>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>When</th><th>Mode</th><th>Tool</th><th>Conf</th><th>Laya ms</th><th>Tokens</th><th>Reason</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+  <footer>
+    API: <a href="/v1/stats">/v1/stats</a> ·
+    <a href="/health/live">/health/live</a> ·
+    Chat proxy: <code>POST /v1/chat/completions</code>
+    <span id="updated"></span>
+  </footer>
+</main>
+<script>
+const tiles = document.getElementById('tiles');
+const rows = document.getElementById('rows');
+const err = document.getElementById('error');
+const toggle = document.getElementById('toggle');
+let routing = true;
+
+function card(label, value, accent) {
+  return `<div class="card"><div class="label">${label}</div><div class="value${accent ? ' accent' : ''}">${value}</div></div>`;
+}
+
+async function load() {
+  try {
+    const res = await fetch('/v1/stats', { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const s = await res.json();
+    err.hidden = true;
+    routing = !!s.routing_enabled;
+    toggle.textContent = 'Routing: ' + (routing ? 'on' : 'off');
+    toggle.style.color = routing ? 'var(--ok)' : 'var(--warn)';
+    tiles.innerHTML = [
+      card('Requests', s.requests ?? '—'),
+      card('Forced', s.forced ?? '—', true),
+      card('Passthrough', s.passthrough ?? '—'),
+      card('Laya avg ms', s.laya_avg_latency_ms != null ? Math.round(s.laya_avg_latency_ms) : '—'),
+      card('Routed', s.routed ?? '—'),
+      card('No tool', s.none ?? '—'),
+      card('Laya errors', s.laya_errors ?? '—'),
+    ].join('');
+    const events = s.events || [];
+    rows.innerHTML = events.length ? events.map(ev => {
+      const when = ev.at ? new Date(ev.at).toLocaleTimeString() : '—';
+      const conf = ev.confidence != null ? Number(ev.confidence).toFixed(2) : '—';
+      const tokens = `${ev.prompt_tokens ?? '—'} / ${ev.completion_tokens ?? '—'}`;
+      return `<tr>
+        <td>${when}</td>
+        <td class="${ev.mode || ''}">${ev.mode || '—'}</td>
+        <td>${ev.tool ?? '—'}</td>
+        <td>${conf}</td>
+        <td>${ev.laya_latency_ms ?? '—'}</td>
+        <td>${tokens}</td>
+        <td style="color:var(--muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ev.reason ?? '—'}</td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px">No traffic yet. Point your agent at http://127.0.0.1:8790/v1</td></tr>`;
+    document.getElementById('updated').textContent = s.updated_at
+      ? ' · updated ' + new Date(s.updated_at).toLocaleString()
+      : '';
+  } catch (e) {
+    err.hidden = false;
+    err.textContent = 'Could not load /v1/stats: ' + e.message;
+  }
+}
+
+toggle.addEventListener('click', async () => {
+  await fetch('/v1/routing', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ enabled: !routing }),
+  });
+  await load();
+});
+
+load();
+setInterval(load, 2000);
+</script>
+</body>
+</html>

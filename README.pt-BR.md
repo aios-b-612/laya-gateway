@@ -72,7 +72,8 @@ cd apps/web && npm install && npm run dev
 - Health: `GET /health/live`
 - Stats: `GET /v1/stats`
 - Chat proxy: `POST /v1/chat/completions` (alias `/chat/completions`)
-- Dashboard: `http://127.0.0.1:3000`
+- Dashboard (built-in): `http://127.0.0.1:8790/` or `/dashboard`
+- Optional Next UI: `http://127.0.0.1:3000`
 
 ### Apontar um client OpenAI-compatible
 

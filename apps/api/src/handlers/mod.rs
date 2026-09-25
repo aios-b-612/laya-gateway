@@ -26,6 +26,13 @@ pub struct RoutingBody {
     pub enabled: bool,
 }
 
+pub async fn dashboard_page() -> HttpResponse {
+    HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .insert_header(("Cache-Control", "no-store"))
+        .body(include_str!("../dashboard.html"))
+}
+
 pub async fn health_live(state: web::Data<AppState>) -> HttpResponse {
     HttpResponse::Ok()
         .insert_header(("Cache-Control", "no-store"))

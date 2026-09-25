@@ -56,6 +56,8 @@ async fn main() -> Result<()> {
             .app_data(state.clone())
             .wrap(cors)
             .wrap(TracingLogger::default())
+            .route("/", web::get().to(handlers::dashboard_page))
+            .route("/dashboard", web::get().to(handlers::dashboard_page))
             .route("/health/live", web::get().to(handlers::health_live))
             .route("/health/ready", web::get().to(handlers::health_ready))
             .route("/v1/health/live", web::get().to(handlers::health_live))

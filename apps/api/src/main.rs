@@ -64,6 +64,9 @@ async fn main() -> Result<()> {
             .route("/v1/health/ready", web::get().to(handlers::health_ready))
             .route("/v1/stats", web::get().to(handlers::get_stats))
             .route("/v1/routing", web::post().to(handlers::set_routing))
+            .route("/v1/settings", web::get().to(handlers::get_settings))
+            .route("/v1/settings", web::post().to(handlers::set_settings))
+            .route("/v1/settings/test", web::post().to(handlers::test_laya))
             .route(
                 "/v1/chat/completions",
                 web::post().to(handlers::chat_completions),

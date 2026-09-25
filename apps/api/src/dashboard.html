@@ -33,7 +33,7 @@
   .eyebrow { color: var(--accent); letter-spacing: .16em; text-transform: uppercase; font-size: 12px; margin: 0 0 6px; }
   h1 { margin: 0; font-size: 28px; font-weight: 600; }
   .sub { color: var(--muted); max-width: 42rem; margin: 8px 0 0; }
-  button {
+  button, .btn {
     border: 1px solid var(--line);
     background: var(--panel);
     color: var(--text);
@@ -42,12 +42,30 @@
     cursor: pointer;
     font: inherit;
   }
-  button:hover { border-color: var(--accent); }
+  button:hover, .btn:hover { border-color: var(--accent); }
+  button.primary { border-color: var(--accent); color: var(--accent); }
   .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-bottom: 16px; }
-  .card { background: color-mix(in srgb, var(--panel) 85%, transparent); border: 1px solid var(--line); border-radius: 10px; padding: 14px; }
+  .card { background: color-mix(in srgb, var(--panel) 85%, transparent); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
   .card .label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
   .card .value { font: 600 26px/1.2 ui-monospace, Menlo, monospace; margin-top: 8px; }
   .accent { color: var(--accent); }
+  .presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+  .presets button { font-size: 13px; }
+  label.field { display: block; margin-bottom: 12px; }
+  label.field span { display: block; color: var(--muted); font-size: 12px; margin-bottom: 6px; }
+  input[type=text], input[type=password] {
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #0a0f14;
+    color: var(--text);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font: 14px ui-monospace, Menlo, monospace;
+  }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 10px; }
+  .status-ok { color: var(--ok); }
+  .status-bad { color: var(--danger); }
   table { width: 100%; border-collapse: collapse; font: 13px ui-monospace, Menlo, monospace; }
   th, td { text-align: left; padding: 8px 10px; border-top: 1px solid color-mix(in srgb, var(--line) 70%, transparent); }
   th { color: var(--muted); font-size: 11px; text-transform: uppercase; font-weight: 500; }
@@ -65,11 +83,35 @@
     <div>
       <p class="eyebrow">local · 127.0.0.1:8790</p>
       <h1>laya-gateway</h1>
-      <p class="sub">Laya picks the tool; your usual LLM does the rest. This page is served by the gateway itself.</p>
+      <p class="sub">Configure where Laya lives (Octor VPN, your LAN, or localhost). Default is Octor DEV; anyone can point at their own machine.</p>
     </div>
     <button type="button" id="toggle">Routing: …</button>
   </header>
   <div id="error" class="err" hidden></div>
+
+  <section class="card" id="settings-card">
+    <div class="label">Laya endpoint</div>
+    <p class="hint" style="margin-top:8px">Accepts <code>host:port</code>, base URL, or full <code>/v1/systemone</code>. Saved under <code id="settings-path">~/.laya-gateway/settings.json</code>.</p>
+    <div class="presets" id="presets"></div>
+    <label class="field">
+      <span>Laya URL</span>
+      <input id="laya-url" type="text" placeholder="http://10.8.0.9:8343/v1/systemone" autocomplete="off" spellcheck="false">
+    </label>
+    <label class="field">
+      <span>Optional API key (leave blank to keep current)</span>
+      <input id="laya-key" type="password" placeholder="Bearer token if your Laya requires auth" autocomplete="off">
+    </label>
+    <label class="field">
+      <span>Optional model id</span>
+      <input id="laya-model" type="text" placeholder="e.g. multilingual" autocomplete="off" spellcheck="false">
+    </label>
+    <div class="actions">
+      <button type="button" class="primary" id="save-settings">Save</button>
+      <button type="button" id="test-laya">Test connection</button>
+      <span id="settings-msg" class="hint"></span>
+    </div>
+  </section>
+
   <section class="grid" id="tiles"></section>
   <section class="card">
     <div class="label" style="margin-bottom:10px">Recent requests</div>
@@ -86,6 +128,7 @@
   </section>
   <footer>
     API: <a href="/v1/stats">/v1/stats</a> ·
+    <a href="/v1/settings">/v1/settings</a> ·
     <a href="/health/live">/health/live</a> ·
     Chat proxy: <code>POST /v1/chat/completions</code>
     <span id="updated"></span>
@@ -96,13 +139,36 @@ const tiles = document.getElementById('tiles');
 const rows = document.getElementById('rows');
 const err = document.getElementById('error');
 const toggle = document.getElementById('toggle');
+const presetsEl = document.getElementById('presets');
+const urlInput = document.getElementById('laya-url');
+const keyInput = document.getElementById('laya-key');
+const modelInput = document.getElementById('laya-model');
+const settingsMsg = document.getElementById('settings-msg');
 let routing = true;
 
 function card(label, value, accent) {
   return `<div class="card"><div class="label">${label}</div><div class="value${accent ? ' accent' : ''}">${value}</div></div>`;
 }
 
-async function load() {
+async function loadSettings() {
+  const res = await fetch('/v1/settings', { cache: 'no-store' });
+  if (!res.ok) throw new Error('settings ' + res.status);
+  const s = await res.json();
+  urlInput.value = s.laya_url || '';
+  modelInput.value = s.laya_model || '';
+  keyInput.placeholder = s.laya_api_key_set
+    ? 'API key is set — leave blank to keep'
+    : 'Bearer token if your Laya requires auth';
+  document.getElementById('settings-path').textContent = s.settings_path || '~/.laya-gateway/settings.json';
+  presetsEl.innerHTML = (s.presets || []).map(p =>
+    `<button type="button" data-url="${p.url}">${p.label}</button>`
+  ).join('');
+  presetsEl.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', () => { urlInput.value = btn.dataset.url; });
+  });
+}
+
+async function loadStats() {
   try {
     const res = await fetch('/v1/stats', { cache: 'no-store' });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -150,11 +216,71 @@ toggle.addEventListener('click', async () => {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ enabled: !routing }),
   });
-  await load();
+  await loadStats();
 });
 
-load();
-setInterval(load, 2000);
+document.getElementById('save-settings').addEventListener('click', async () => {
+  settingsMsg.textContent = 'Saving…';
+  settingsMsg.className = 'hint';
+  const body = {
+    laya_url: urlInput.value.trim(),
+    laya_model: modelInput.value.trim() || null,
+  };
+  if (keyInput.value.trim()) body.laya_api_key = keyInput.value.trim();
+  const res = await fetch('/v1/settings', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    settingsMsg.textContent = data.error || ('Save failed (' + res.status + ')');
+    settingsMsg.className = 'hint status-bad';
+    return;
+  }
+  keyInput.value = '';
+  settingsMsg.textContent = 'Saved · ' + data.laya_url;
+  settingsMsg.className = 'hint status-ok';
+  await loadSettings();
+});
+
+document.getElementById('test-laya').addEventListener('click', async () => {
+  settingsMsg.textContent = 'Testing…';
+  settingsMsg.className = 'hint';
+  // Save first if URL field changed, so test hits the typed endpoint
+  const saveRes = await fetch('/v1/settings', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      laya_url: urlInput.value.trim(),
+      laya_model: modelInput.value.trim() || null,
+      ...(keyInput.value.trim() ? { laya_api_key: keyInput.value.trim() } : {}),
+    }),
+  });
+  if (!saveRes.ok) {
+    const data = await saveRes.json().catch(() => ({}));
+    settingsMsg.textContent = data.error || 'Could not apply URL before test';
+    settingsMsg.className = 'hint status-bad';
+    return;
+  }
+  const res = await fetch('/v1/settings/test', { method: 'POST' });
+  const data = await res.json();
+  if (data.ok) {
+    settingsMsg.textContent = `OK · HTTP ${data.http_status} · ${data.latency_ms} ms`;
+    settingsMsg.className = 'hint status-ok';
+  } else {
+    settingsMsg.textContent = data.error || (`Failed · HTTP ${data.http_status || '?'}`);
+    settingsMsg.className = 'hint status-bad';
+  }
+  await loadSettings();
+});
+
+loadSettings().catch(e => {
+  err.hidden = false;
+  err.textContent = 'Could not load settings: ' + e.message;
+});
+loadStats();
+setInterval(loadStats, 2000);
 </script>
 </body>
 </html>

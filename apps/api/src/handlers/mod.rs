@@ -8,7 +8,9 @@ use serde::Deserialize;
 use serde_json::{json, Value};
 use uuid::Uuid;
 
-use crate::config::Config;
+use crate::config::{
+    normalize_laya_url, save_persisted, Config, PersistedSettings, DEFAULT_LAYA_URL,
+};
 use crate::decide::{self, Decision};
 use crate::error::ApiError;
 use crate::laya::LayaClient;
@@ -24,6 +26,15 @@ pub struct AppState {
 #[derive(Deserialize)]
 pub struct RoutingBody {
     pub enabled: bool,
+}
+
+#[derive(Deserialize)]
+pub struct SettingsBody {
+    pub laya_url: String,
+    #[serde(default)]
+    pub laya_api_key: Option<String>,
+    #[serde(default)]
+    pub laya_model: Option<String>,
 }
 
 pub async fn dashboard_page() -> HttpResponse {
@@ -43,13 +54,14 @@ pub async fn health_live(state: web::Data<AppState>) -> HttpResponse {
 }
 
 pub async fn health_ready(state: web::Data<AppState>) -> HttpResponse {
+    let ep = state.laya.snapshot();
     HttpResponse::Ok()
         .insert_header(("Cache-Control", "no-store"))
         .json(json!({
             "status": "ok",
             "service": state.config.service_name,
             "routing": state.stats.routing_enabled(),
-            "laya_url": state.config.laya_url,
+            "laya_url": ep.url,
         }))
 }
 
@@ -67,6 +79,90 @@ pub async fn set_routing(
     HttpResponse::Ok().json(json!({
         "routing_enabled": state.stats.routing_enabled(),
     }))
+}
+
+pub async fn get_settings(state: web::Data<AppState>) -> HttpResponse {
+    let ep = state.laya.snapshot();
+    HttpResponse::Ok()
+        .insert_header(("Cache-Control", "no-store"))
+        .json(json!({
+            "laya_url": ep.url,
+            "laya_api_key_set": ep.api_key.as_ref().is_some_and(|k| !k.is_empty()),
+            "laya_model": ep.model,
+            "default_laya_url": DEFAULT_LAYA_URL,
+            "presets": [
+                {
+                    "id": "octor-dev",
+                    "label": "Octor DEV (VPN)",
+                    "url": "http://10.8.0.9:8343/v1/systemone"
+                },
+                {
+                    "id": "local",
+                    "label": "Local Laya",
+                    "url": "http://127.0.0.1:8000/v1/systemone"
+                },
+                {
+                    "id": "local-docker",
+                    "label": "Local Docker :8343",
+                    "url": "http://127.0.0.1:8343/v1/systemone"
+                }
+            ],
+            "settings_path": state.config.settings_path.display().to_string(),
+        }))
+}
+
+pub async fn set_settings(
+    state: web::Data<AppState>,
+    body: web::Json<SettingsBody>,
+) -> Result<HttpResponse, ApiError> {
+    let url = normalize_laya_url(&body.laya_url).map_err(|e| ApiError::BadRequest(e.to_string()))?;
+    let current = state.laya.snapshot();
+    // Empty api key in the form means "keep current"; send "-" or explicit clear later.
+    let api_key = match body.laya_api_key.as_deref().map(str::trim) {
+        None | Some("") => current.api_key.clone(),
+        Some("__clear__") => None,
+        Some(v) => Some(v.to_string()),
+    };
+    let model = match body.laya_model.as_deref().map(str::trim) {
+        None | Some("") => current.model.clone(),
+        Some("__clear__") => None,
+        Some(v) => Some(v.to_string()),
+    };
+    let persisted = PersistedSettings {
+        laya_url: url,
+        laya_api_key: api_key,
+        laya_model: model,
+    };
+    state
+        .laya
+        .apply(&persisted)
+        .map_err(|e| ApiError::BadRequest(e.to_string()))?;
+    save_persisted(&state.config.settings_path, &persisted)
+        .map_err(ApiError::Other)?;
+    Ok(HttpResponse::Ok().json(json!({
+        "ok": true,
+        "laya_url": persisted.laya_url,
+        "laya_api_key_set": persisted.laya_api_key.as_ref().is_some_and(|k| !k.is_empty()),
+        "laya_model": persisted.laya_model,
+        "settings_path": state.config.settings_path.display().to_string(),
+    })))
+}
+
+pub async fn test_laya(state: web::Data<AppState>) -> HttpResponse {
+    match state.laya.health_probe().await {
+        Ok((status, body, ms)) => HttpResponse::Ok().json(json!({
+            "ok": (200..300).contains(&status),
+            "http_status": status,
+            "latency_ms": ms,
+            "body": body,
+            "laya_url": state.laya.snapshot().url,
+        })),
+        Err(err) => HttpResponse::Ok().json(json!({
+            "ok": false,
+            "error": err.to_string(),
+            "laya_url": state.laya.snapshot().url,
+        })),
+    }
 }
 
 pub async fn chat_completions(
@@ -92,7 +188,7 @@ pub async fn chat_completions(
         if let Some(skip) = decide::skip_reason(&input) {
             reason = Some(skip.into());
         } else {
-            let laya_req = decide::build_request(&input, state.config.laya_model.clone());
+            let laya_req = decide::build_request(&input, state.laya.snapshot().model.clone());
             match state.laya.decide(laya_req).await {
                 Ok(call) => {
                     laya_latency_ms = Some(call.latency_ms);

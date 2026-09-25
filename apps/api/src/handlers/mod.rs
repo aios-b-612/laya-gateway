@@ -99,11 +99,6 @@ pub async fn get_settings(state: web::Data<AppState>) -> HttpResponse {
             "default_laya_url": DEFAULT_LAYA_URL,
             "presets": [
                 {
-                    "id": "octor-dev",
-                    "label": "Octor DEV (VPN)",
-                    "url": "http://10.8.0.9:8343/v1/systemone"
-                },
-                {
                     "id": "local",
                     "label": "Local Laya",
                     "url": "http://127.0.0.1:8000/v1/systemone"

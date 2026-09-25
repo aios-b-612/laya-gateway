@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 description = "Local LLM gateway: Laya decides which tool to call; your usual model does the rest"
-repository = "https://github.com/rodriguesfas/laya-gateway"
+repository = "https://github.com/aios-b-612/laya-gateway"
 readme = "../../README.md"
 
 [[bin]]

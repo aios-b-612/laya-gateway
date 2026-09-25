@@ -1,6 +1,6 @@
 # AGENTS.md — laya-gateway
 
-Monorepo público (`rodriguesfas/laya-gateway`): gateway local + dashboard.
+Monorepo público (`aios-b-612/laya-gateway`): gateway local + dashboard.
 
 ## Stack
 

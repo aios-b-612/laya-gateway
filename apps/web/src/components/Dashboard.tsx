@@ -112,11 +112,6 @@ export function Dashboard() {
             </button>
           ))}
         </nav>
-        <div className="mt-auto border-t border-[var(--gray-200)] px-5 py-4 text-xs text-[var(--gray-400)]">
-          Ecme / Octor template layout
-          <br />
-          API {GATEWAY}
-        </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">

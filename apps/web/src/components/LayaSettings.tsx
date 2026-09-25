@@ -85,9 +85,8 @@ export function LayaSettings({ gateway }: { gateway: string }) {
         Where is Laya?
       </h2>
       <p className="mb-4 mt-1 text-[13px] text-[var(--gray-400)]">
-        Default is Octor DEV VPN (<code>10.8.0.9:8343</code>). Point to your
-        own machine if you are not on the Octor VPN. Saved at{" "}
-        <code>{path}</code>.
+        Set the URL of your Laya System One service. You can run it on this
+        machine or any reachable host. Saved at <code>{path}</code>.
       </p>
       <div className="mb-3 flex flex-wrap gap-2">
         {presets.map((p) => (

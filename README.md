@@ -1,40 +1,42 @@
 # laya-gateway
 
-Gateway local (laptop do desenvolvedor) inspirado no [jev-gateway](https://github.com/vinilana/jev-gateway): quando o coding agent vai decidir **qual tool chamar**, o gateway pergunta ao [Laya](https://github.com/NandhaKishorM/laya) (System One open-weight) em vez de gastar o LLM caro só nessa escolha. O resto do tráfego segue para o modelo usual.
+> [Português (Brasil)](./README.pt-BR.md)
 
-Monorepo com:
+A local LLM gateway (runs on the developer’s laptop) inspired by [jev-gateway](https://github.com/vinilana/jev-gateway): when a coding agent is about to decide **which tool to call**, the gateway asks [Laya](https://github.com/NandhaKishorM/laya) (open-weight System One) instead of spending the expensive LLM on that choice alone. Everything else goes to your usual model untouched.
 
-| Parte | Stack | Origem |
-|-------|--------|--------|
-| `apps/api` | Rust + Actix | padrões de [`0ctor/template-api-rust`](https://github.com/0ctor/template-api-rust) |
-| `apps/web` | Next.js 16 + Tailwind | stack de [`0ctor/template-frontend`](https://github.com/0ctor/template-frontend) (dashboard local, sem SSO Octor) |
+Monorepo layout:
 
-> Projeto independente. Laya é open-source; Jev/TypeSafe são de terceiros. Este gateway **não** é afiliado à TypeSafe.
+| Path | Stack | Inspired by |
+|------|--------|-------------|
+| `apps/api` | Rust + Actix | [`0ctor/template-api-rust`](https://github.com/0ctor/template-api-rust) |
+| `apps/web` | Next.js 16 + Tailwind | [`0ctor/template-frontend`](https://github.com/0ctor/template-frontend) (local dashboard, no Octor SSO) |
 
-## Arquitetura
+> Independent project. Laya is open source; Jev/TypeSafe are third parties. This gateway is **not** affiliated with TypeSafe.
+
+## Architecture
 
 ```
 IDE / agent (OpenCode, Codex, …)
         │  OpenAI-compatible
         ▼
-laya-gateway  :8790   ← 127.0.0.1 no seu PC
-   ├─ “qual tool?” → Laya (local ou DEV Octor VPN)
-   └─ resto        → LLM_UPSTREAM_URL
+laya-gateway  :8790   ← 127.0.0.1 on your machine
+   ├─ “which tool?” → Laya (local or shared DEV endpoint)
+   └─ everything else → LLM_UPSTREAM_URL
         │
         ▼
-dashboard Next  :3000  (só metadados / métricas)
+Next dashboard  :3000  (metadata / metrics only)
 ```
 
-- **Gateway = local** (como o jev-gateway): keys do LLM e prompts ficam no laptop.
-- **Laya = pode ser compartilhado** (ex. `http://10.8.0.9:8343/v1/systemone` na VPN DEV Octor).
+- **Gateway = local** (same idea as jev-gateway): LLM keys and prompts stay on the laptop.
+- **Laya = may be shared** (e.g. a team DEV VPN URL for `/v1/systemone`).
 
-Fail-open: se Laya cair, o request segue intacto para o LLM.
+Fail-open: if Laya is down, the request is forwarded to the LLM unchanged.
 
 ## Quick start
 
 ```bash
 cp .env.example .env
-# ajuste LAYA_URL e LLM_UPSTREAM_URL
+# set LAYA_URL and LLM_UPSTREAM_URL
 
 # terminal 1 — API
 cd apps/api && cargo run
@@ -49,42 +51,42 @@ cd apps/web && npm install && npm run dev
 - Chat proxy: `POST /v1/chat/completions` (alias `/chat/completions`)
 - Dashboard: `http://127.0.0.1:3000`
 
-### Apontar um client OpenAI-compatible
+### Point an OpenAI-compatible client
 
-Base URL do client → `http://127.0.0.1:8790/v1` (ou `…/v1` conforme o client).  
-Authorization do LLM é encaminhada; opcionalmente use `LLM_API_KEY` no `.env`.
+Set the client base URL to `http://127.0.0.1:8790/v1` (or as required by the client).  
+LLM `Authorization` is forwarded; optionally set `LLM_API_KEY` in `.env`.
 
 ## Routing
 
-| Mode | Efeito |
+| Mode | Effect |
 |------|--------|
-| `forced` | `tool_choice` fixado na tool escolhida pelo Laya |
-| `none` | `tool_choice: none` (texto puro) |
-| `passthrough` | request intacto (baixa confiança, sem tools, routing off, erro Laya) |
+| `forced` | `tool_choice` pinned to the tool Laya selected |
+| `none` | `tool_choice: none` (plain text reply) |
+| `passthrough` | request unchanged (low confidence, no tools, routing off, Laya error) |
 
-Toggle: botão no dashboard ou `POST /v1/routing` com `{"enabled":false}` (baseline).
+Toggle: dashboard button or `POST /v1/routing` with `{"enabled":false}` (baseline).
 
-## Segurança
+## Security
 
-- Bind **somente** loopback (`LAYA_GATEWAY_BIND` deve ser `127.0.0.1` / `localhost`).
-- Dashboard não mostra prompts, args de tools nem credentials — só contadores e motivos.
+- Bind **loopback only** (`LAYA_GATEWAY_BIND` must be `127.0.0.1` / `localhost`).
+- The dashboard never shows prompts, tool arguments, or credentials — only counters and skip reasons.
 
-## Status do MVP
+## MVP status
 
-Implementado agora:
+Shipped:
 
-- Proxy OpenAI Chat Completions
-- Decisão Laya `choice` + `noul`
-- Stats + toggle de routing
-- Dashboard Next
+- OpenAI Chat Completions proxy
+- Laya `choice` + `noul` decision
+- Stats + routing toggle
+- Next dashboard
 
-Ainda não (roadmap):
+Roadmap:
 
-- Adapters Anthropic Messages / Gemini / Responses (como no jev-gateway)
+- Anthropic Messages / Gemini / Responses adapters (as in jev-gateway)
 - Launchers `laya-opencode` / `laya-codex`
-- Shortlist quando há dezenas de tools
-- Direct tool call sem LLM (args fechados)
+- Shortlist when there are dozens of tools
+- Direct tool call without an LLM (closed args)
 
-## Licença
+## License
 
-MIT — ver [LICENSE](./LICENSE).
+MIT — see [LICENSE](./LICENSE).

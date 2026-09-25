@@ -6,15 +6,28 @@ import {
   setRouting,
   type StatsSnapshot,
 } from "@/lib/gateway";
+import { type Locale, t } from "@/lib/i18n";
 import { StatCard } from "@/components/StatCard";
 import { EventsTable } from "@/components/EventsTable";
 
 const POLL_MS = 2000;
+const LOCALE_KEY = "laya-gateway-locale";
 
 export function Dashboard() {
   const [stats, setStats] = useState<StatsSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [locale, setLocale] = useState<Locale>("en");
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem(LOCALE_KEY);
+    if (saved === "en" || saved === "pt-BR") setLocale(saved);
+  }, []);
+
+  function changeLocale(next: Locale) {
+    setLocale(next);
+    window.localStorage.setItem(LOCALE_KEY, next);
+  }
 
   const load = useCallback(async () => {
     try {
@@ -39,7 +52,7 @@ export function Dashboard() {
       await setRouting(!stats.routing_enabled);
       await load();
     } catch (e) {
-      setError(e instanceof Error ? e.message : "falha ao alternar routing");
+      setError(e instanceof Error ? e.message : "routing toggle failed");
     } finally {
       setBusy(false);
     }
@@ -50,66 +63,89 @@ export function Dashboard() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="mb-1 text-sm tracking-[0.18em] text-[var(--accent)] uppercase">
-            local · 127.0.0.1
+            {t(locale, "eyebrow")}
           </p>
-          <h1 className="text-4xl font-semibold tracking-tight">laya-gateway</h1>
+          <h1 className="text-4xl font-semibold tracking-tight">
+            {t(locale, "title")}
+          </h1>
           <p className="mt-2 max-w-xl text-[var(--muted)]">
-            Laya escolhe a tool; o LLM caro só preenche argumentos ou responde.
-            Inspirado no jev-gateway — motor System One open-weight.
+            {t(locale, "subtitle")}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={() => void toggleRouting()}
-          disabled={!stats || busy}
-          className="rounded-md border border-[var(--line)] bg-[var(--panel)] px-4 py-2 text-sm font-medium transition hover:border-[var(--accent)] disabled:opacity-50"
-        >
-          Routing:{" "}
-          <span
-            style={{
-              color: stats?.routing_enabled ? "var(--ok)" : "var(--warn)",
-            }}
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="text-xs text-[var(--muted)]">
+            {t(locale, "lang")}
+            <select
+              className="ml-2 rounded-md border border-[var(--line)] bg-[var(--panel)] px-2 py-1 text-sm text-[var(--text)]"
+              value={locale}
+              onChange={(e) => changeLocale(e.target.value as Locale)}
+            >
+              <option value="en">English</option>
+              <option value="pt-BR">Português (Brasil)</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={() => void toggleRouting()}
+            disabled={!stats || busy}
+            className="rounded-md border border-[var(--line)] bg-[var(--panel)] px-4 py-2 text-sm font-medium transition hover:border-[var(--accent)] disabled:opacity-50"
           >
-            {stats?.routing_enabled ? "on" : "off"}
-          </span>
-        </button>
+            {t(locale, "routing")}:{" "}
+            <span
+              style={{
+                color: stats?.routing_enabled ? "var(--ok)" : "var(--warn)",
+              }}
+            >
+              {stats?.routing_enabled ? "on" : "off"}
+            </span>
+          </button>
+        </div>
       </header>
 
       {error ? (
         <div className="rounded-md border border-[var(--danger)]/40 bg-[var(--danger)]/10 px-4 py-3 text-sm">
-          Gateway offline ou inacessível ({error}). Suba com{" "}
-          <code className="font-[family-name:var(--font-mono)]">make api</code>.
+          {t(locale, "offlinePrefix", { error })}
+          <code className="font-[family-name:var(--font-mono)]">make api</code>
+          {t(locale, "offlineSuffix")}
         </div>
       ) : null}
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Requests" value={stats?.requests ?? "—"} />
-        <StatCard label="Forced tools" value={stats?.forced ?? "—"} accent />
-        <StatCard label="Passthrough" value={stats?.passthrough ?? "—"} />
+        <StatCard label={t(locale, "requests")} value={stats?.requests ?? "—"} />
         <StatCard
-          label="Laya avg ms"
-          value={
-            stats
-              ? stats.laya_avg_latency_ms.toFixed(0)
-              : "—"
-          }
+          label={t(locale, "forced")}
+          value={stats?.forced ?? "—"}
+          accent
+        />
+        <StatCard
+          label={t(locale, "passthrough")}
+          value={stats?.passthrough ?? "—"}
+        />
+        <StatCard
+          label={t(locale, "layaAvg")}
+          value={stats ? stats.laya_avg_latency_ms.toFixed(0) : "—"}
         />
       </section>
 
       <section className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Routed" value={stats?.routed ?? "—"} />
-        <StatCard label="No tool" value={stats?.none ?? "—"} />
-        <StatCard label="Laya errors" value={stats?.laya_errors ?? "—"} />
+        <StatCard label={t(locale, "routed")} value={stats?.routed ?? "—"} />
+        <StatCard label={t(locale, "none")} value={stats?.none ?? "—"} />
+        <StatCard
+          label={t(locale, "layaErrors")}
+          value={stats?.laya_errors ?? "—"}
+        />
       </section>
 
-      <EventsTable events={stats?.events ?? []} />
+      <EventsTable events={stats?.events ?? []} locale={locale} />
 
       <footer className="border-t border-[var(--line)] pt-4 text-xs text-[var(--muted)]">
-        Atualizado{" "}
+        {t(locale, "updated")}{" "}
         {stats?.updated_at
-          ? new Date(stats.updated_at).toLocaleString()
+          ? new Date(stats.updated_at).toLocaleString(
+              locale === "pt-BR" ? "pt-BR" : "en-US",
+            )
           : "—"}{" "}
-        · prompts e args nunca aparecem aqui · só metadados
+        · {t(locale, "privacy")}
       </footer>
     </main>
   );

@@ -16,7 +16,8 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   title: "laya-gateway",
-  description: "Dashboard local — Laya decide a tool; o LLM faz o resto",
+  description:
+    "Local dashboard — Laya decides the tool; the LLM does the rest",
 };
 
 export default function RootLayout({

@@ -7,7 +7,7 @@ on:
 
 jobs:
   api:
-    runs-on: ubuntu-latest
+    runs-on: ${{ ((github.event_name == 'pull_request' && github.base_ref == 'main') || github.ref == 'refs/heads/main') && fromJSON('["self-hosted","Linux","X64","docker","octor-prd"]') || fromJSON('["self-hosted","Linux","X64","docker","octor-dev"]') }}
     defaults:
       run:
         working-directory: apps/api
@@ -18,7 +18,7 @@ jobs:
       - run: cargo clippy -- -D warnings
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: ${{ ((github.event_name == 'pull_request' && github.base_ref == 'main') || github.ref == 'refs/heads/main') && fromJSON('["self-hosted","Linux","X64","docker","octor-prd"]') || fromJSON('["self-hosted","Linux","X64","docker","octor-dev"]') }}
     defaults:
       run:
         working-directory: apps/web
